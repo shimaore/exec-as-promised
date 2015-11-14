@@ -51,4 +51,4 @@ exec('/bin/date')
           Promise.reject error
 
     Promise = require 'bluebird'
-    _exec = Promise.promisify (require 'child_process').exec
+    _exec = Promise.promisify (require 'child_process').exec, multiArgs:true
