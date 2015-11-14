@@ -10,12 +10,6 @@ Usage
 exec = require('exec-as-promised')()
 ```
 
-You may provide a logger (such as `console`, `winston`, ...):
-
-```javascript
-exec = require('exec-as-promised')(console)
-```
-
 Then `exec(command,[options],[fail_if_stderr])` where `options` is the same as in `child_process.exec`, and `fail_if_stderr` is a boolean indicating whether to reject if `stderr` is not empty.
 
 ```javascript
@@ -25,7 +19,7 @@ exec('/bin/date')
 }
 ```
 
-    module.exports = (logger) ->
+    module.exports = ->
       (cmd,args...) ->
         fail_if_stderr = false
         options = {}
@@ -38,17 +32,19 @@ exec('/bin/date')
             else
               throw new Error "Invalid #{typeof arg} argument"
 
-        logger?.info cmd, options
+        debug "Executing", {cmd, options}
         _exec cmd, options
         .then ([stdout,stderr]) ->
-          logger?.info 'Command returned', {cmd,stdout,stderr}
+          debug 'Command returned', {cmd,stdout,stderr}
           if stderr and fail_if_stderr
             Promise.reject new Error stderr
           else
             stdout
         .catch (error) ->
-          logger?.error "#{cmd} failed: #{error}"
+          debug "#{cmd} failed: #{error}"
           Promise.reject error
 
     Promise = require 'bluebird'
     _exec = Promise.promisify (require 'child_process').exec, multiArgs:true
+    pkg = require './package'
+    debug = (require 'debug') pkg.name
